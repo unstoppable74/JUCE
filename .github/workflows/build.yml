@@ -1,0 +1,37 @@
+name: Build VST/VST3 Plugins (Windows)  
+  
+on:  
+  push:  
+    branches: [main, master, develop]  
+  pull_request:  
+    branches: [main, master, develop]  
+  workflow_dispatch:  
+  
+jobs:  
+  build:  
+    name: windows (Release)  
+    runs-on: windows-2022  
+  
+    steps:  
+      - name: Checkout repository  
+        uses: actions/checkout@v4  
+  
+      - name: Configure CMake  
+        run: cmake -B build -S . -DJUCE_BUILD_EXAMPLES=ON -DJUCE_GLOBAL_VST2_SDK_PATH="${{ github.workspace }}/VSTSDK2.4" -DJUCE_COPY_PLUGIN_AFTER_BUILD=OFF -DJUCE_BUILD_EXTRAS=OFF  
+  
+      - name: Build  
+        run: cmake --build build --config Release --parallel  
+  
+      - name: Upload VST2 plugins  
+        uses: actions/upload-artifact@v4  
+        with:  
+          name: vst2-plugins-windows-Release  
+          path: build/**/*_artefacts/Release/VST/*.dll  
+          if-no-files-found: warn  
+  
+      - name: Upload VST3 plugins  
+        uses: actions/upload-artifact@v4  
+        with:  
+          name: vst3-plugins-windows-Release  
+          path: build/**/*_artefacts/Release/VST3/  
+          if-no-files-found: warn
